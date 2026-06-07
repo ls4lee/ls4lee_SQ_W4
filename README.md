@@ -4,7 +4,7 @@
 
 To run the sketch locally, open `index.html` in Google Chrome using Live Server.
 
-Click an option to begin. Click **Rock**, **Paper**, or **Scissors** each round. First to win 2 rounds wins the game. Click **Play Again** to rematch.
+Click an option to begin the choose your adventure game. Select the options of your liking; there are 4 positive endings and 4 negative endings. Click ***TRY ANOTHER PATH*** to restart the game. 
 
 **Opening the Chrome Console**
 
