@@ -3,13 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Week 4 Example 2 — Rock Paper Scissors Best of 3</title>
+    <title>Squirrel Apocalypse: Choose Your Adventure</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
 
-    <!-- Load game files in order — game logic first, then drawing, then main -->
-    <!-- The order matters: sketch.js uses functions from game.js and scenes.js -->
-    <!-- so those must be loaded before sketch.js -->
+    <!-- LEVEL 1 -->
+    <script src="story/scene_1_start.js"></script>
+
+    <!-- LEVEL 2 -->
+    <script src="story/scene_2a_ostrich.js"></script>
+    <script src="story/scene_2b_rock.js"></script>
+
+    <!-- LEVEL 3 -->
+    <script src="story/scene_3a_nest.js"></script>
+    <script src="story/scene_3b_eggs.js"></script>
+    <script src="story/scene_3c_gym.js"></script>
+    <script src="story/scene_3d_betrayal.js"></script>
+
+    <!-- LEVEL 4 (Endings) -->
+    <script src="story/ending_win_ostrich_1.js"></script>
+    <script src="story/ending_win_ostrich_2.js"></script>
+    <script src="story/ending_lose_ostrich_1.js"></script>
+    <script src="story/ending_lose_ostrich_2.js"></script>
+    <script src="story/ending_win_rock_1.js"></script>
+    <script src="story/ending_lose_rock_1.js"></script>
+    <script src="story/ending_win_solo.js"></script>
+    <script src="story/ending_lose_solo.js"></script>
+
+    <!-- Main Logic Scripts -->
     <script src="game.js"></script>
     <script src="scenes.js"></script>
     <script src="sketch.js"></script>

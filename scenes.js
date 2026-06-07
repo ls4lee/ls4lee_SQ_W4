@@ -1,324 +1,106 @@
 // ============================================================
-// scenes.js: Drawing Functions (Example 2)
-// ============================================================
-// This file contains all drawing helper functions.
-// It does not contain any game logic — that lives in game.js.
-// Functions defined here are available in sketch.js because
-// all files share the same global scope.
+// scenes.js: Canvas UI Component Drawing Rules
 // ============================================================
 
-// ------------------------------------------------------------
-// drawBackground()
-// A simple dark background drawn every frame in draw().
-// Calling background() every frame clears the previous frame,
-// which is what creates the illusion of animation.
-// ------------------------------------------------------------
 function drawBackground() {
-  background(10);
+  background(15, 15, 22);
 }
 
-// ------------------------------------------------------------
-// drawBlob(x, y, r, col, t)
-// Draws a noise blob at the given position and size.
-// Called with different arguments for the player and NPC blobs.
-//
-// x, y — centre position of the blob
-// r    — radius of the blob
-// col  — p5 color object (e.g. color(0, 200, 180))
-// t    — animation time; increases each frame to drive the wobble
-// ------------------------------------------------------------
-function drawBlob(x, y, r, col, t) {
+function renderAdventureScreen(sceneData) {
+  // Level Tracking Tag Line
   push();
-  fill(col);
   noStroke();
+  fill(110, 120, 140);
+  textSize(13);
+  textAlign(CENTER);
+  text("LEVEL " + sceneData.level + " • PHASE: " + sceneData.type.toUpperCase(), width / 2, 40);
+  
+  stroke(35, 40, 55);
+  strokeWeight(2);
+  line(50, 55, width - 50, 55);
 
-  beginShape();
-  let numPoints = 48; // more points = smoother shape
-  for (let i = 0; i < numPoints; i++) {
-    let angle = (TWO_PI / numPoints) * i;
-
-    // noise() returns a smooth random value between 0 and 1.
-    // We use it to push each vertex slightly in or out.
-    let noiseVal = noise(cos(angle) * 0.8 + t, sin(angle) * 0.8 + t);
-
-    // map() converts noise (0–1) to a radius offset (-8 to +8 pixels)
-    let nr = r + map(noiseVal, 0, 1, -8, 8);
-
-    // Convert polar coordinates (angle, radius) to x/y
-    vertex(x + cos(angle) * nr, y + sin(angle) * nr);
+  // Scene Header Text Frame (Color matches outcome polarity)
+  noStroke();
+  if (sceneData.type === "win") {
+    fill(46, 204, 113); // Positive Green
+  } else if (sceneData.type === "lose") {
+    fill(231, 76, 60); // Negative Red
+  } else {
+    fill(241, 196, 15); // Neutral Yellow
   }
-  endShape(CLOSE);
+  
+  textSize(26);
+  textAlign(CENTER);
+  text(sceneData.title, width / 2, 100);
 
-  // Eyes
-  fill(10);
-  ellipse(x - 9, y - 7, 8, 8);
-  ellipse(x + 9, y - 7, 8, 8);
-
+  // Body Block Text Wrap Setup
+  fill(215, 220, 235);
+  textSize(15);
+  textAlign(CENTER);
+  textLeading(26);
+  text(sceneData.narrative, 80, 145, width - 160, 180);
   pop();
+
+  // Dynamic Button Render Block
+  if (sceneData.choices && sceneData.choices.length > 0) {
+    for (let i = 0; i < sceneData.choices.length; i++) {
+      let choice = sceneData.choices[i];
+      let btnX = (i === 0) ? width / 4 + 40 : (3 * width) / 4 - 40;
+      let btnY = 380;
+      let btnW = 300;
+      let btnH = 65;
+
+      let hovered = isMouseOver(btnX, btnY, btnW, btnH);
+      drawChoiceButton(btnX, btnY, btnW, btnH, choice.text, hovered, sceneData.type);
+    }
+  } else {
+    // Ending Screen Reset Trigger Button
+    let btnX = width / 2;
+    let btnY = 390;
+    let btnW = 260;
+    let btnH = 55;
+    let hovered = isMouseOver(btnX, btnY, btnW, btnH);
+    
+    drawChoiceButton(btnX, btnY, btnW, btnH, "TRY ANOTHER PATH", hovered, "reset");
+  }
 }
 
-// ------------------------------------------------------------
-// drawButton(x, y, w, h, label, isHovered)
-// Draws a rectangular button with a text label.
-// isHovered changes the colour when the mouse is over it,
-// giving visual feedback that the button is clickable.
-//
-// x, y        — centre position (uses rectMode(CENTER))
-// w, h        — width and height of the button
-// label       — text displayed inside the button
-// isHovered   — true if the mouse is currently over the button
-// ------------------------------------------------------------
-function drawButton(x, y, w, h, label, isHovered) {
+function drawChoiceButton(x, y, w, h, label, isHovered, sceneType) {
   push();
-  rectMode(CENTER); // x, y are the centre of the rectangle
-
-  // Button background — lighter colour when hovered
-  fill(isHovered ? color(80, 80, 100) : color(40, 40, 60));
-  stroke(isHovered ? color(180, 180, 220) : color(80, 80, 100));
+  rectMode(CENTER);
+  
+  // Custom Color Selection Framework Based on Positive/Negative Outcomes
+  if (sceneType === "win") {
+    fill(isHovered ? color(39, 174, 96) : color(27, 128, 68)); // Green spectrum
+    stroke(46, 204, 113);
+  } else if (sceneType === "lose") {
+    fill(isHovered ? color(192, 41, 43) : color(139, 30, 31)); // Red spectrum
+    stroke(231, 76, 60);
+  } else if (sceneType === "reset") {
+    fill(isHovered ? color(127, 140, 141) : color(52, 73, 94)); // Utility grey/blue
+    stroke(149, 165, 166);
+  } else {
+    fill(isHovered ? color(40, 45, 60) : color(24, 26, 36)); // Base game option layout
+    stroke(isHovered ? color(241, 196, 15) : color(60, 75, 100));
+  }
+  
   strokeWeight(2);
-  rect(x, y, w, h, 8); // rounded corners
+  rect(x, y, w, h, 6);
 
-  // Button label — centred inside the button
+  // Label text formatting inside the button box boundary
   fill(255);
   noStroke();
   textAlign(CENTER, CENTER);
-  textSize(18);
-  text(label, x, y);
-
+  textSize(12);
+  text(label.toUpperCase(), x, y - 1, w - 24, h - 10);
   pop();
 }
 
-// ------------------------------------------------------------
-// isMouseOver(x, y, w, h)
-// Returns true if the mouse cursor is currently inside the
-// rectangle defined by centre (x, y) and dimensions (w, h).
-// Used alongside drawButton() to detect clicks.
-// ------------------------------------------------------------
 function isMouseOver(x, y, w, h) {
   return (
     mouseX > x - w / 2 &&
     mouseX < x + w / 2 &&
     mouseY > y - h / 2 &&
     mouseY < y + h / 2
-  );
-}
-
-// ------------------------------------------------------------
-// drawStartScreen()
-// Title screen shown before the game begins.
-// Uses frameCount to animate the blobs even before the
-// game starts. frameCount is a built-in p5.js variable
-// that increases by 1 every frame.
-// ------------------------------------------------------------
-function drawStartScreen() {
-  // Title
-  fill(255);
-  textAlign(CENTER);
-  textSize(52);
-  text("Blob Rock, Paper, Scissors", width / 2, 140);
-
-  // Subtitle
-  fill(160);
-  textSize(16);
-  text("Rock. Paper. Scissors.", width / 2, 185);
-  text("Best of 3 rounds wins.", width / 2, 210);
-
-  // Blobs — animated using frameCount since blobT isn't
-  // available here (it lives in sketch.js)
-  drawBlob(220, 300, 50, color(0, 200, 180), frameCount * 0.015);
-  drawBlob(580, 300, 50, color(255, 150, 30), frameCount * 0.015 + 50);
-
-  fill(160);
-  textSize(13);
-  text("You", 220, 365);
-  text("NPC", 580, 365);
-
-  // Start button
-  drawButton(
-    width / 2,
-    390,
-    200,
-    52,
-    "Start Game",
-    isMouseOver(width / 2, 390, 200, 52),
-  );
-}
-
-// ------------------------------------------------------------
-// drawHUD()
-// HUD = Heads Up Display.
-// Shows the current round number and scores at the top.
-// Reads currentRound, MAX_ROUNDS, playerScore, and npcScore
-// from game.js via shared global scope.
-// ------------------------------------------------------------
-function drawHUD() {
-  noStroke();
-
-  // Round indicator — centred at the top
-  fill(160);
-  textSize(14);
-  textAlign(CENTER);
-  text("Round " + currentRound + " of " + MAX_ROUNDS, width / 2, 30);
-
-  // Player score (left side)
-  fill(0, 200, 180);
-  textSize(28);
-  textAlign(LEFT);
-  text(playerScore, 60, 35);
-
-  fill(160);
-  textSize(13);
-  text("You", 60, 52);
-
-  // NPC score (right side)
-  fill(255, 150, 30);
-  textSize(28);
-  textAlign(RIGHT);
-  text(npcScore, width - 60, 35);
-
-  fill(160);
-  textSize(13);
-  text("NPC", width - 60, 52);
-
-  // Dividing line under the HUD
-  stroke(40);
-  strokeWeight(1);
-  line(0, 60, width, 60);
-}
-
-// ------------------------------------------------------------
-// drawGameScreen(playerBlobT, npcBlobT)
-// The main gameplay screen shown during STATE_PLAY.
-// Shows the HUD, blobs, choice buttons, and round result.
-// playerBlobT and npcBlobT are passed in from sketch.js
-// so the blobs animate continuously across all screens.
-// ------------------------------------------------------------
-function drawGameScreen(playerBlobT, npcBlobT) {
-  drawHUD();
-
-  // Blobs
-  drawBlob(220, 190, 50, color(0, 200, 180), playerBlobT);
-  drawBlob(580, 190, 50, color(255, 150, 30), npcBlobT);
-
-  fill(180);
-  noStroke();
-  textAlign(CENTER);
-  textSize(14);
-  text("You", 220, 265);
-  text("NPC", 580, 265);
-
-  // playerChoice is null before the player picks — set in game.js
-  if (playerChoice !== null) {
-    // Show what each side chose
-    fill(200);
-    textSize(18);
-    textAlign(CENTER);
-    text(playerChoice.toUpperCase(), 220, 300);
-    text(npcChoice.toUpperCase(), 580, 300);
-
-    // Show the round result
-    drawRoundResult();
-
-    // Button label changes depending on whether the game is over
-    let btnLabel =
-      currentRound < MAX_ROUNDS && !gameOver ? "Next Round" : "See Result";
-    drawButton(
-      width / 2,
-      390,
-      200,
-      52,
-      btnLabel,
-      isMouseOver(width / 2, 390, 200, 52),
-    );
-  } else {
-    // Show choice buttons before the player has picked
-    fill(160);
-    textSize(14);
-    textAlign(CENTER);
-    text("Make your choice", width / 2, 295);
-
-    let labels = ["ROCK", "PAPER", "SCISSORS"];
-    for (let i = 0; i < 3; i++) {
-      drawButton(
-        BTN_POSITIONS[i],
-        BTN_Y,
-        BTN_W,
-        BTN_H,
-        labels[i],
-        isMouseOver(BTN_POSITIONS[i], BTN_Y, BTN_W, BTN_H),
-      );
-    }
-  }
-}
-
-// ------------------------------------------------------------
-// drawRoundResult()
-// Shows the win/lose/draw result for the current round.
-// roundResult is set in game.js after the player picks.
-// ------------------------------------------------------------
-function drawRoundResult() {
-  push();
-  textAlign(CENTER);
-  noStroke();
-
-  if (roundResult === "win") {
-    fill(0, 220, 180);
-    textSize(36);
-    text("You Win This Round!", width / 2, 345);
-  } else if (roundResult === "lose") {
-    fill(255, 120, 30);
-    textSize(36);
-    text("NPC Wins This Round!", width / 2, 345);
-  } else {
-    fill(220);
-    textSize(36);
-    text("Draw!", width / 2, 345);
-  }
-
-  pop();
-}
-
-// ------------------------------------------------------------
-// drawGameOverScreen()
-// Final screen shown during STATE_OVER.
-// Displays the overall winner and final scores.
-// overallWinner and scores are read from game.js.
-// ------------------------------------------------------------
-function drawGameOverScreen() {
-  // Blobs still animating on the end screen
-  drawBlob(220, 220, 55, color(0, 200, 180), frameCount * 0.015);
-  drawBlob(580, 220, 55, color(255, 150, 30), frameCount * 0.015 + 50);
-
-  textAlign(CENTER);
-  noStroke();
-
-  // Overall result — shown in the winner's colour
-  if (overallWinner === "player") {
-    fill(0, 220, 180);
-    textSize(52);
-    text("You Win!", width / 2, 130);
-  } else if (overallWinner === "npc") {
-    fill(255, 120, 30);
-    textSize(52);
-    text("NPC Wins!", width / 2, 130);
-  } else {
-    fill(220);
-    textSize(52);
-    text("It's a Draw!", width / 2, 130);
-  }
-
-  // Final scores
-  fill(160);
-  textSize(18);
-  text("You " + playerScore + "  —  " + npcScore + " NPC", width / 2, 175);
-
-  // Play Again button
-  drawButton(
-    width / 2,
-    390,
-    220,
-    52,
-    "Play Again",
-    isMouseOver(width / 2, 390, 220, 52),
   );
 }
